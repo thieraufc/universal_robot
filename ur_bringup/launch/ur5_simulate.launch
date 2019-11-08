@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find ur_gazebo)/launch/ur5.launch" />
+  <include file="$(find ur5_moveit_config)/launch/ur5_moveit_planning_execution.launch" />
+  <node name="adebridge" pkg="ur_bringup" type="adebridge.py" /> 
+</launch>

@@ -1,0 +1,14 @@
+<launch>
+  <arg name="bringup_robot_ip" /> <!-- Forces the user to specify a robot_ip the bringup launch needs -->
+  <arg name="robotiq_usb" />      <!-- The usb interface (/dev/ttyUSB0, etc) being used by Robotiq serial connection -->
+
+  <include file="$(find ur_modern_driver)/launch/ur5_bringup.launch">
+    <arg name="robot_ip" value="$(arg bringup_robot_ip)" />
+  </include>
+  <include file="$(find ur5_moveit_config)/launch/ur5_moveit_planning_execution.launch" />
+  
+  <!-- via https://answers.ros.org/question/233353/set-delay-between-starting-nodes-within-launch-file/ -->
+  <arg name="bridge_delay" default="10.0" />
+  <node name="adebridge" pkg="ur_bringup" type="adebridge.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@"/> 
+  <node name="gripper" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperRtuNode.py" args="$(arg robotiq_usb)" />
+</launch>

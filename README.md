@@ -1,4 +1,5 @@
-# Universal Robot
+# Custom-Tweaked Universal Robot
+*See 'What's New in this fork' (at the bottom) to get an overview of what makes this fork different.*
 
 [![Build Status](http://build.ros.org/job/Kdev__universal_robot__ubuntu_xenial_amd64/badge/icon)](http://build.ros.org/job/Kdev__universal_robot__ubuntu_xenial_amd64)
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -127,4 +128,26 @@ As MoveIt! seems to have difficulties with finding plans for the UR with full jo
 
 ```roslaunch ur5_moveit_config moveit_rviz.launch config:=true```
 
+# What's new in this fork?
 
+This fork has some very case-specific tweaks that are really only relevant to people who are running the UR3, UR5, or UR10 controlled by Polyscope 3+ with a depth camera mounted to the end-effector alongside a Robotiq 2f-85 gripper, being controlled from a non-ROS system through ROS.
+
+__Robotiq gripper__
+
+The Robotiq 2f-85 gripper has been appended to the URDF of the UR3, UR5, and UR10. This allows for more accurate planning and obstacle avoidance when using that particular gripper.
+
+__Depth Camera__
+
+The Intel D435 Depth Camera has been mounted to the end-effector. A collision box has been added to avoid planning into the camera. 
+
+__Better collision awareness__
+
+MoveIt starts with an awareness of the ground plane, gripper, and camera, and will avoid planning into those things. 
+
+__More case-specific launch files__
+
+The three or four things that needed to be started seperately can now be started in one handy launch file.
+
+__Additional planning subscribers/services__
+
+Addition planning services and subscribers have been made available that streamlines the process of controlling the move group from a non-ROS system.
