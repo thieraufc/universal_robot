@@ -4,7 +4,7 @@ project(ur_msgs)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS message_generation std_msgs)
+find_package(catkin REQUIRED COMPONENTS message_generation std_msgs sensor_msgs geometry_msgs)
 
 
 ## Generate messages in the 'msg' folder
@@ -25,6 +25,8 @@ add_service_files(
    SetPayload.srv
    SetSpeedSliderFraction.srv
    SetIO.srv
+   JointStateRequest.srv
+   PoseGoalRequest.srv
 )
 
 
@@ -32,6 +34,8 @@ add_service_files(
 generate_messages(
    DEPENDENCIES
    std_msgs
+   sensor_msgs
+   geometry_msgs
 )
 
 ###################################
