@@ -27,11 +27,18 @@ def main():
     GROUP_NAME = 'manipulator'
     moveit_commander.roscpp_initialize(sys.argv)
     rospy.init_node('ade_bridge', anonymous=True)
-    #time.sleep(20) # wait for move group to come up with this hack :(
-    GROUP = moveit_commander.MoveGroupCommander(GROUP_NAME)
+
+    group_is_ready = False;
+    while not group_is_ready: # Loop through, trying to connect to move group, until sucessful.
+        try:
+            GROUP = moveit_commander.MoveGroupCommander(GROUP_NAME)
+            group_is_ready = True
+            rospy.loginfo("Adebridge.py connected to move group.")
+        except RuntimeError, e:
+            group_is_ready = False
+            rospy.logwarn("Adebridge.py failed to connect to move group. Will try again.")
 
     add_obstacles()
-
     rospy.Subscriber("/adebridge_goal_pose", geometry_msgs.msg.Pose, pose_goal_callback)
 
     # Hand in a pose/joint state, and let this code figure out how to make that happen
@@ -39,7 +46,7 @@ def main():
     rospy.Subscriber("/adebridge_group_name", String, move_group_callback)
 
     # The above, but as a service (providing blocking functionality with success/fail return state)
-    rospy.Service("/adebridge_goal_pose_service", PoseGoalRequest, move_group_service_callback)
+    rospy.Service("/adebridge_goal_pose_service", PoseGoalRequest, pose_goal_service_callback)
     rospy.Service("/adebridge_goal_joint_state_service", JointStateRequest, joint_goal_service_callback)
 
     publisher = rospy.Publisher('/adebridge_current_pose', geometry_msgs.msg.Pose, queue_size=3)
@@ -47,22 +54,35 @@ def main():
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
         publisher.publish(GROUP.get_current_pose().pose)
-        rate.sleep()
+        try:
+            rate.sleep()
+        except Exception, e:
+            rospy.signal_shutdown(e)
+            rospy.loginfo("Adebridge shutting down")
 
 
 def add_obstacles():
     scene = moveit_commander.PlanningSceneInterface()
     rospy.sleep(2) # Hack via https://answers.ros.org/question/209030/moveit-planningsceneinterface-addbox-not-showing-in-rviz/
+
     table_pose = geometry_msgs.msg.PoseStamped()
-    pillar_pose = geometry_msgs.msg.PoseStamped()
-    wall_pose = geometry_msgs.msg.PoseStamped()
+    table2_pose = geometry_msgs.msg.PoseStamped()
+    l_wall_pose = geometry_msgs.msg.PoseStamped()
+    r_wall_pose = geometry_msgs.msg.PoseStamped()
+    b_wall_pose = geometry_msgs.msg.PoseStamped()
     effector_pose = geometry_msgs.msg.PoseStamped()
     camera_pose = geometry_msgs.msg.PoseStamped()
 
+    rospy.loginfo("Generated PoseStamped().")
+
     robot = moveit_commander.RobotCommander()
     table_pose.header.frame_id  = robot.get_planning_frame(); table_pose.pose.position.x =   0;   table_pose.pose.position.y  = 0;   table_pose.pose.position.z = 0;
-    pillar_pose.header.frame_id = robot.get_planning_frame(); pillar_pose.pose.position.x = .68;  pillar_pose.pose.position.y = .9;  pillar_pose.pose.position.z = 0;
-    wall_pose.header.frame_id   = robot.get_planning_frame(); wall_pose.pose.position.x =   -.72; wall_pose.pose.position.y   = .07; wall_pose.pose.position.z = 0;
+    table2_pose.header.frame_id  = robot.get_planning_frame(); table2_pose.pose.position.x =   0;   table2_pose.pose.position.y  = 0;   table2_pose.pose.position.z = -.15;
+    l_wall_pose.header.frame_id  = robot.get_planning_frame(); l_wall_pose.pose.position.x =   -.7;   l_wall_pose.pose.position.y  = 0;   l_wall_pose.pose.position.z = 0;
+    r_wall_pose.header.frame_id  = robot.get_planning_frame(); r_wall_pose.pose.position.x =   .7;   r_wall_pose.pose.position.y  = 0;   r_wall_pose.pose.position.z = 0;
+    b_wall_pose.header.frame_id  = robot.get_planning_frame(); b_wall_pose.pose.position.x =   0;   b_wall_pose.pose.position.y  = -.3;   b_wall_pose.pose.position.z = 0;
+
+    rospy.loginfo("Set header planning_frame().")
 
     camera_pose.header.frame_id = "ee_link"
     camera_pose.pose.orientation.w = 1
@@ -74,15 +94,27 @@ def add_obstacles():
     effector_pose.pose.position.x = .1
     scene.add_box("effector", effector_pose, size=(.155, .18, .08))
 
-    rospy.sleep(2) # Same hack as above
-    scene.attach_box("ee_link", "effector")
-    scene.attach_box("ee_link", "camera")
+    rospy.loginfo("Set up end effector and camera.")
 
-    table_pose.pose.orientation.w = 1; pillar_pose.pose.orientation.w = 1; wall_pose.pose.orientation.w = 1;
+    table_pose.pose.orientation.w = 1
+    table2_pose.pose.orientation.w = 1
+    l_wall_pose.pose.orientation.x = -1; l_wall_pose.pose.orientation.y = -1;l_wall_pose.pose.orientation.z = -1;l_wall_pose.pose.orientation.w = -1;
+    r_wall_pose.pose.orientation.x = -1; r_wall_pose.pose.orientation.y = -1;r_wall_pose.pose.orientation.z = -1;r_wall_pose.pose.orientation.w = -1;
+    b_wall_pose.pose.orientation.x = -1; b_wall_pose.pose.orientation.y = -1;b_wall_pose.pose.orientation.z = -1;b_wall_pose.pose.orientation.w = 1;
 
-    scene.add_box("table", table_pose, (2, 2, 0))
-#    scene.add_box("pillar", pillar_pose, (.6, .6, 2))
-#    scene.add_box("wall", wall_pose, (.2, 2, 2))
+    rospy.loginfo("Set pose orientation for tables/walls.")
+
+    try:
+        # Sometimes these crash RViz...
+        scene.add_box("table", table_pose, (2, .74, 0.001))
+        scene.add_box("table2", table2_pose, (2, 2, 0.001))
+        scene.add_box("l_wall", l_wall_pose, (2, 2, 0.001))
+        scene.add_box("r_wall", r_wall_pose, (2, 2, 0.001))  # These two still crash things...
+        scene.add_box("b_wall", b_wall_pose, (2, 2, 0.001))
+    except Exception, e:
+        log.warn("Failed to add all obstacles.");
+
+    rospy.loginfo("Added tables/walls.")
 
 
 def retract():
@@ -188,8 +220,8 @@ def arm_needs_to_swivel(goal):
         return True
 
 
-def move_group_service_callback(data):
-    return move_group_callback(data.pose)
+def pose_goal_service_callback(data):
+    return pose_goal_callback(data.pose)
 
 
 def joint_goal_service_callback(data):
@@ -210,6 +242,7 @@ def move_group_callback(data):
 def pose_goal_callback(data):
     global GROUP
     global SWIVEL_MODE
+    rospy.logwarn("Entered pose_goal_callback!")
 
     pose_goal = geometry_msgs.msg.Pose()
     rospy.loginfo("data recieved: "+json.dumps(yaml.load(str(data))))
