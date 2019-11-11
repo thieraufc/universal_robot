@@ -9,6 +9,6 @@
   
   <!-- via https://answers.ros.org/question/233353/set-delay-between-starting-nodes-within-launch-file/ -->
   <arg name="bridge_delay" default="10.0" />
-  <node name="adebridge" pkg="ur_bringup" type="adebridge.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@"/> 
+  <node name="adebridge" pkg="ur_bringup" type="adebridge.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@'"/> 
   <node name="gripper" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperRtuNode.py" args="$(arg robotiq_usb)" />
 </launch>
