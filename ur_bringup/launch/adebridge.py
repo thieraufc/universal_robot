@@ -28,7 +28,7 @@ def main():
     moveit_commander.roscpp_initialize(sys.argv)
     rospy.init_node('ade_bridge', anonymous=True)
 
-    group_is_ready = False;
+    group_is_ready = False
     while not group_is_ready: # Loop through, trying to connect to move group, until sucessful.
         try:
             GROUP = moveit_commander.MoveGroupCommander(GROUP_NAME)
@@ -38,7 +38,7 @@ def main():
             group_is_ready = False
             rospy.logwarn("Adebridge.py failed to connect to move group. Will try again.")
 
-    add_obstacles()
+    #add_obstacles()
     rospy.Subscriber("/adebridge_goal_pose", geometry_msgs.msg.Pose, pose_goal_callback)
 
     # Hand in a pose/joint state, and let this code figure out how to make that happen
@@ -259,15 +259,20 @@ def pose_goal_callback(data):
         rospy.loginfo("Unretracted")
 
     GROUP.set_pose_target(pose_goal)
-    
-    plan = GROUP.go(wait=True)
-    if plan is False:
+
+    plan = GROUP.plan()
+    if not plan.joint_trajectory.points:
         rospy.loginfo("Planning failed")
-        return False
+        return "PLAN_FAIL"
+
+    result = GROUP.execute(plan, wait=True)
 
     GROUP.stop()
     GROUP.clear_pose_targets()
-    return True
+    if result:
+        return "SUCCESS"
+    else:
+        return "EXECUTE_FAIL"
 
 
 def joint_goal_callback(data):
@@ -279,14 +284,18 @@ def joint_goal_callback(data):
     for i in range(0, len(data.position)):
         joint_goal[i] = data.position[i]
 
-    plan = GROUP.go(joint_goal, wait=True)
-    if plan is False:
+    plan = GROUP.plan(joint_goal)
+    if not plan.joint_trajectory.points:
         rospy.loginfo("Planning failed")
-        return False
+        return "PLAN_FAIL"
 
+    result = GROUP.execute(plan, wait=True)
     GROUP.stop()
-    time.sleep(2)
-    return True
+
+    if result:
+        return "SUCCESS"
+    else:
+        return "EXECUTE_FAIL"
 
 
 if __name__ == '__main__':
