@@ -38,7 +38,7 @@ def main():
             group_is_ready = False
             rospy.logwarn("Adebridge.py failed to connect to move group. Will try again.")
 
-    #add_obstacles()
+    add_obstacles()
     rospy.Subscriber("/adebridge_goal_pose", geometry_msgs.msg.Pose, pose_goal_callback)
 
     # Hand in a pose/joint state, and let this code figure out how to make that happen
@@ -82,8 +82,6 @@ def add_obstacles():
     r_wall_pose.header.frame_id  = robot.get_planning_frame(); r_wall_pose.pose.position.x =   .7;   r_wall_pose.pose.position.y  = 0;   r_wall_pose.pose.position.z = 0;
     b_wall_pose.header.frame_id  = robot.get_planning_frame(); b_wall_pose.pose.position.x =   0;   b_wall_pose.pose.position.y  = -.3;   b_wall_pose.pose.position.z = 0;
 
-    rospy.loginfo("Set header planning_frame().")
-
     camera_pose.header.frame_id = "ee_link"
     camera_pose.pose.orientation.w = 1
     camera_pose.pose.position.z = .07
@@ -94,7 +92,9 @@ def add_obstacles():
     effector_pose.pose.position.x = .1
     scene.add_box("effector", effector_pose, size=(.155, .18, .08))
 
-    rospy.loginfo("Set up end effector and camera.")
+    rospy.sleep(2) # Same hack as above
+    scene.attach_box("ee_link", "effector")
+    scene.attach_box("ee_link", "camera")
 
     table_pose.pose.orientation.w = 1
     table2_pose.pose.orientation.w = 1
@@ -102,19 +102,17 @@ def add_obstacles():
     r_wall_pose.pose.orientation.x = -1; r_wall_pose.pose.orientation.y = -1;r_wall_pose.pose.orientation.z = -1;r_wall_pose.pose.orientation.w = -1;
     b_wall_pose.pose.orientation.x = -1; b_wall_pose.pose.orientation.y = -1;b_wall_pose.pose.orientation.z = -1;b_wall_pose.pose.orientation.w = 1;
 
-    rospy.loginfo("Set pose orientation for tables/walls.")
+    scene.add_box("table", table_pose, (2, .74, 0))
+    scene.add_box("table2", table2_pose, (2, 2, 0))
+    scene.add_box("l_wall", l_wall_pose, (2, 2, 0))
+    scene.add_box("r_wall", r_wall_pose, (2, 2, 0))
+    scene.add_box("b_wall", b_wall_pose, (2, 2, 0))
 
-    try:
-        # Sometimes these crash RViz...
-        scene.add_box("table", table_pose, (2, .74, 0.001))
-        scene.add_box("table2", table2_pose, (2, 2, 0.001))
-        scene.add_box("l_wall", l_wall_pose, (2, 2, 0.001))
-        scene.add_box("r_wall", r_wall_pose, (2, 2, 0.001))  # These two still crash things...
-        scene.add_box("b_wall", b_wall_pose, (2, 2, 0.001))
-    except Exception, e:
-        log.warn("Failed to add all obstacles.");
-
-    rospy.loginfo("Added tables/walls.")
+    scene.attach_box("base_link", "table")
+    scene.attach_box("base_link", "table2")
+    scene.attach_box("base_link", "l_wall")
+    scene.attach_box("base_link", "r_wall")
+    scene.attach_box("base_link", "b_wall")
 
 
 def retract():
