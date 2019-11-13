@@ -355,6 +355,7 @@
       </collision>
     </link>
 
+
     <xacro:ur_arm_transmission prefix="${prefix}" hw_interface="${transmission_hw_interface}" />
     <xacro:ur_arm_gazebo prefix="${prefix}" />
 
@@ -376,6 +377,31 @@
       <origin xyz="0 ${wrist_3_length} 0" rpy="${pi/-2.0} 0 0"/>
       <parent link="${prefix}wrist_3_link"/>
       <child link="${prefix}tool0"/>
+    </joint>
+
+    <!--
+    <link name="${prefix}camera_frame">
+      <collision>
+        <geometry>
+          <box size="0.02 0.01 0.01"/>
+        </geometry>
+        <origin rpy="0 0 0"/>
+      </collision>
+    </link>
+    <joint name="${prefix}camera_frame_fixed_joint" type="fixed">
+      <origin xyz="0 ${wrist_3_length} 0.06" rpy="0 0 ${pi/2.0}"/>
+      <parent link="${prefix}wrist_3_link"/>
+      <child link="${prefix}camera_frame"/>
+    </joint>
+    -->
+
+    <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro" />
+    <xacro:robotiq_arg2f_85 prefix="" />
+
+    <joint name="${prefix}arm_to_effector_joint" type="fixed">
+      <origin xyz="0.0 0 0" rpy="0 ${pi/2} 0" />
+      <parent link="${prefix}ee_link" />
+      <child link="robotiq_arg2f_base_link" />
     </joint>
 
   </xacro:macro>
