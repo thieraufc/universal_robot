@@ -6,18 +6,23 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
+import trajectory_msgs.msg
 import json
 import yaml
 import time
+import rospkg
+import os
 from math import pi, sqrt, radians, atan
 from std_msgs.msg import String
 from ur_msgs.srv import PoseGoalRequest, JointStateRequest
 from moveit_commander.conversions import pose_to_list
 
 ACCEPTABLE_DISTANCE = 0.35 # The threshold for a path's closeness to the center of the base where we will retract instead of going there directly
+SPEED_FACTOR = 0.5
 GROUP_NAME = None
 GROUP = None
 SWIVEL_MODE = False
+PLAN_MAP = None
 
 # Set up subscribers/publishers
 def main():
@@ -59,6 +64,32 @@ def main():
         except Exception, e:
             rospy.signal_shutdown(e)
             rospy.loginfo("Adebridge shutting down")
+
+
+# Function to scale the path speed by a variable, via https://github.com/ros-planning/moveit_ros/issues/368
+def scale_path_speed(factor, path):
+    newpath = moveit_msgs.msg.RobotTrajectory()
+    newpath = path
+
+    jointcount = len(path.joint_trajectory.joint_names)
+    pointcount = len(path.joint_trajectory.points)
+    newpoints = list(path.joint_trajectory.points)
+
+    for n in range(pointcount):
+        point = trajectory_msgs.msg.JointTrajectoryPoint()
+        point.time_from_start = path.joint_trajectory.points[n].time_from_start / factor
+        point.velocities = list(path.joint_trajectory.points[n].velocities)
+        point.accelerations = list(path.joint_trajectory.points[n].accelerations)
+        point.positions = path.joint_trajectory.points[n].positions
+
+        for nn in range(jointcount):
+            point.velocities[nn] = point.velocities[nn] * factor
+            point.accelerations[nn] = point.accelerations[nn] * (factor**2) # factor squared, because acceleration
+
+        newpoints[n] = point
+
+    newpath.joint_trajectory.points = newpoints
+    return newpath
 
 
 def add_obstacles():
@@ -240,6 +271,8 @@ def move_group_callback(data):
 def pose_goal_callback(data):
     global GROUP
     global SWIVEL_MODE
+    global SPEED_FACTOR
+
     rospy.logwarn("Entered pose_goal_callback!")
 
     pose_goal = geometry_msgs.msg.Pose()
@@ -263,6 +296,7 @@ def pose_goal_callback(data):
         rospy.loginfo("Planning failed")
         return "PLAN_FAIL"
 
+    plan = scale_path_speed(SPEED_FACTOR, plan)
     result = GROUP.execute(plan, wait=True)
 
     GROUP.stop()
@@ -287,6 +321,7 @@ def joint_goal_callback(data):
         rospy.loginfo("Planning failed")
         return "PLAN_FAIL"
 
+    plan = scale_path_speed(SPEED_FACTOR, plan)
     result = GROUP.execute(plan, wait=True)
     GROUP.stop()
 
@@ -295,6 +330,23 @@ def joint_goal_callback(data):
     else:
         return "EXECUTE_FAIL"
 
+
+#def save_path(name, path):
+#    rp = rospkg.RosPack()
+#    file_path = os.path.join(rp.get_path('ur_bringup'), 'saved_paths', name)
+#    with open(file_path, 'w') as savefile:
+#        yaml.dump(plan, savefile, default_flow_style=True)
+#
+#
+#def load_paths():
+#    global PLAN_MAP
+#
+#    rp = rospkg.RosPack()
+#    directory = os.path.join(rp.get_path('ur_bringup'), 'saved_paths')
+#    directory = os.listdir(directory)
+#    for f in directory:
+#        with open(os.path.join(directory, f), 'r') as openfile:
+#            PLAN_MAP[f] = yaml.load(openfile)
 
 if __name__ == '__main__':
     main()
