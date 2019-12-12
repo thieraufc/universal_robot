@@ -1,0 +1,5 @@
+geometry_msgs/Pose pose_start
+geometry_msgs/Pose pose_end
+string name
+---
+string state

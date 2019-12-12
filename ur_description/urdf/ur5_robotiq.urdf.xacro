@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <!-- include macros for UR5 and Robotiq gripper -->
+  <xacro:include filename="$(find ur_description)/urdf/ur5_base.urdf.xacro"/>
+  <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro" />
+
+  <!-- create the robot + eef combo itself as a macro -->
+  <xacro:macro name="ur5_with_robotiq" params="prefix">
+
+    <!-- instantiate arm and eef model -->
+    <xacro:ur5              prefix="${prefix}robot_" />
+    <xacro:robotiq_arg2f_85 prefix="${prefix}eef_" />
+
+    <!-- attach eef to ur5 model -->
+    <joint name="${prefix}tool0-${prefix}eef_base_link" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${prefix}tool0" />
+      <child  link="${prefix}robotiq_arg2f_base_link" />
+    </joint>
+
+  </xacro:macro>
+</robot>

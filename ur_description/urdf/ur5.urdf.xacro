@@ -398,6 +398,8 @@
     <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro" />
     <xacro:robotiq_arg2f_85 prefix="" />
 
+    <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_transmission.xacro" />
+    
     <joint name="${prefix}arm_to_effector_joint" type="fixed">
       <origin xyz="0.0 0 0" rpy="0 ${pi/2} 0" />
       <parent link="${prefix}ee_link" />

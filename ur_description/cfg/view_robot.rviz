@@ -89,6 +89,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        camera_frame:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -115,6 +120,8 @@ Visualization Manager:
           Value: true
         /tool0:
           Value: true
+        /camera_frame
+          Value: true
         All Enabled: true
       Marker Scale: 1
       Name: TF
@@ -130,6 +137,8 @@ Visualization Manager:
                   /link_5:
                     /link_6:
                       /tool0:
+                        {}
+                      /camera_frame:
                         {}
       Update Interval: 0
       Value: true

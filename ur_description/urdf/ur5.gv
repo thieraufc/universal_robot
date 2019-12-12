@@ -1,0 +1,68 @@
+digraph G {
+node [shape=box];
+"world" [label="world"];
+"base_link" [label="base_link"];
+"base" [label="base"];
+"shoulder_link" [label="shoulder_link"];
+"upper_arm_link" [label="upper_arm_link"];
+"forearm_link" [label="forearm_link"];
+"wrist_1_link" [label="wrist_1_link"];
+"wrist_2_link" [label="wrist_2_link"];
+"wrist_3_link" [label="wrist_3_link"];
+"ee_link" [label="ee_link"];
+"robotiq_arg2f_base_link" [label="robotiq_arg2f_base_link"];
+"left_outer_knuckle" [label="left_outer_knuckle"];
+"left_outer_finger" [label="left_outer_finger"];
+"left_inner_finger" [label="left_inner_finger"];
+"left_inner_finger_pad" [label="left_inner_finger_pad"];
+"left_inner_knuckle" [label="left_inner_knuckle"];
+"right_inner_knuckle" [label="right_inner_knuckle"];
+"right_outer_knuckle" [label="right_outer_knuckle"];
+"right_outer_finger" [label="right_outer_finger"];
+"right_inner_finger" [label="right_inner_finger"];
+"right_inner_finger_pad" [label="right_inner_finger_pad"];
+"tool0" [label="tool0"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"world" -> "world_joint" [label="xyz: 0 0 0 \nrpy: 0 -0 0"]
+"world_joint" -> "base_link"
+"base_link" -> "base_link-base_fixed_joint" [label="xyz: 0 0 0 \nrpy: 0 0 3.14159"]
+"base_link-base_fixed_joint" -> "base"
+"base_link" -> "shoulder_pan_joint" [label="xyz: 0 0 0.089159 \nrpy: 0 -0 0"]
+"shoulder_pan_joint" -> "shoulder_link"
+"shoulder_link" -> "shoulder_lift_joint" [label="xyz: 0 0.13585 0 \nrpy: 0 1.5708 -0"]
+"shoulder_lift_joint" -> "upper_arm_link"
+"upper_arm_link" -> "elbow_joint" [label="xyz: 0 -0.1197 0.425 \nrpy: 0 -0 0"]
+"elbow_joint" -> "forearm_link"
+"forearm_link" -> "wrist_1_joint" [label="xyz: 0 0 0.39225 \nrpy: 0 1.5708 -0"]
+"wrist_1_joint" -> "wrist_1_link"
+"wrist_1_link" -> "wrist_2_joint" [label="xyz: 0 0.093 0 \nrpy: 0 -0 0"]
+"wrist_2_joint" -> "wrist_2_link"
+"wrist_2_link" -> "wrist_3_joint" [label="xyz: 0 0 0.09465 \nrpy: 0 -0 0"]
+"wrist_3_joint" -> "wrist_3_link"
+"wrist_3_link" -> "ee_fixed_joint" [label="xyz: 0 0.0823 0 \nrpy: 0 -0 1.5708"]
+"ee_fixed_joint" -> "ee_link"
+"ee_link" -> "arm_to_effector_joint" [label="xyz: 0 0 0 \nrpy: 0 1.5708 -0"]
+"arm_to_effector_joint" -> "robotiq_arg2f_base_link"
+"robotiq_arg2f_base_link" -> "finger_joint" [label="xyz: 0 -0.0306011 0.054904 \nrpy: 0 -0 -3.14159"]
+"finger_joint" -> "left_outer_knuckle"
+"left_outer_knuckle" -> "left_outer_finger_joint" [label="xyz: 0 0.0315 -0.0041 \nrpy: 0 -0 0"]
+"left_outer_finger_joint" -> "left_outer_finger"
+"left_outer_finger" -> "left_inner_finger_joint" [label="xyz: 0 0.0061 0.0471 \nrpy: 0 -0 0"]
+"left_inner_finger_joint" -> "left_inner_finger"
+"left_inner_finger" -> "left_inner_finger_pad_joint" [label="xyz: 0 -0.0220203 0.03242 \nrpy: 0 -0 0"]
+"left_inner_finger_pad_joint" -> "left_inner_finger_pad"
+"robotiq_arg2f_base_link" -> "left_inner_knuckle_joint" [label="xyz: 0 -0.0127 0.06142 \nrpy: 0 -0 -3.14159"]
+"left_inner_knuckle_joint" -> "left_inner_knuckle"
+"robotiq_arg2f_base_link" -> "right_inner_knuckle_joint" [label="xyz: 0 0.0127 0.06142 \nrpy: 0 -0 0"]
+"right_inner_knuckle_joint" -> "right_inner_knuckle"
+"robotiq_arg2f_base_link" -> "right_outer_knuckle_joint" [label="xyz: 0 0.0306011 0.054904 \nrpy: 0 -0 0"]
+"right_outer_knuckle_joint" -> "right_outer_knuckle"
+"right_outer_knuckle" -> "right_outer_finger_joint" [label="xyz: 0 0.0315 -0.0041 \nrpy: 0 -0 0"]
+"right_outer_finger_joint" -> "right_outer_finger"
+"right_outer_finger" -> "right_inner_finger_joint" [label="xyz: 0 0.0061 0.0471 \nrpy: 0 -0 0"]
+"right_inner_finger_joint" -> "right_inner_finger"
+"right_inner_finger" -> "right_inner_finger_pad_joint" [label="xyz: 0 -0.0220203 0.03242 \nrpy: 0 -0 0"]
+"right_inner_finger_pad_joint" -> "right_inner_finger_pad"
+"wrist_3_link" -> "wrist_3_link-tool0_fixed_joint" [label="xyz: 0 0.0823 0 \nrpy: -1.5708 0 0"]
+"wrist_3_link-tool0_fixed_joint" -> "tool0"
+}

@@ -43,7 +43,7 @@ def main():
             group_is_ready = False
             rospy.logwarn("Adebridge.py failed to connect to move group. Will try again.")
 
-    add_obstacles()
+#    add_obstacles()
     rospy.Subscriber("/adebridge_goal_pose", geometry_msgs.msg.Pose, pose_goal_callback)
 
     # Hand in a pose/joint state, and let this code figure out how to make that happen
